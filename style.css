@@ -1,0 +1,8 @@
+a:hover {
+    color: blue;
+    background-color: pink; 
+    border-radius: 5px; 
+    padding: 5px; 
+    }
+a{text-decoration:none;}
+h1{font-size:30px;font-family:"Gill Sans", Helvetica, Arial, "sans-serif"}
