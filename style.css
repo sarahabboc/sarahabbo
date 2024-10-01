@@ -26,36 +26,4 @@ h1{font-size:30px;font-family:"Gill Sans", Helvetica, Arial, "sans-serif"}
         padding: 0 10px; /* Added padding for small screens */
     }
 
-    /* Flexbox for image grid */
-    .image-container {
-        display: flex;
-        flex-wrap: wrap; /* Allow items to wrap on small screens */
-        justify-content: center;
-        margin: 20px 0; /* Margin for spacing */
-    }
-
-    .image-box {
-        text-align: center;
-        margin: 10px;
-        flex: 1 1 300px; /* Allow flex items to grow and shrink */
-    }
-
-    img {
-        width: 100%; /* Make images responsive */
-        height: auto; /* Maintain aspect ratio */
-        max-height: 300px; /* Set a max height */
-    }
-
-    a {
-        font-weight: bold;
-        color: pink;
-        text-decoration: none;
-    }
-
-
-    .footer {
-        background-color: rgb(231, 231, 17);
-        padding: 10px 0;
-
-    }
-  
+ 
