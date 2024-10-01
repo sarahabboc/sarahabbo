@@ -79,7 +79,6 @@
 
 </head>
  -->
-
 <!doctype html>
 <html>
 <head>
@@ -103,6 +102,7 @@
         
         a {
             text-decoration: none;
+            color: rgb(231, 231, 17); /* Yellow color for links */
         }
 
         .background-image {
@@ -130,6 +130,10 @@
             color: black; 
         }
 
+        h1 {
+            color: rgb(231, 231, 17); /* Yellow header color */
+        }
+
         /* Mobile-friendly adjustments */
         @media only screen and (max-width: 600px) {
             body {
@@ -148,8 +152,7 @@
             }
 
             h1 {
-                font-size: 24px; /* Reduce header font size */
-                color: rgb(231, 231, 17); /* Keep the same color */
+                font-size: 24px; /* Reduce header font size for mobile */
             }
 
             form {
@@ -159,8 +162,8 @@
             }
 
             form input, form textarea, form button {
-                width: 90%; /* Full width for inputs */
-                margin: 10px auto; /* Margin to center */
+                width: 90%; /* Full width for inputs on mobile */
+                margin: 10px auto; /* Centered with margin */
                 font-size: 16px; /* Adjust font size */
             }
 
@@ -168,9 +171,9 @@
                 width: 90%; /* Reduce horizontal rule width for mobile */
             }
 
-            /* Adjust homepage button */
+            /* Style homepage button */
             .homepage-button {
-                background-color: rgb(231, 231, 17);
+                background-color: rgb(231, 231, 17); /* Consistent yellow background */
                 padding: 10px;
                 margin: 20px auto;
                 display: inline-block;
@@ -186,7 +189,7 @@
 
     <div class="background-image"></div>
     <div class="content">
-        <h1 style="text-align:center;">Recipes by Golosa</h1>
+        <h1>Recipes by Golosa</h1>
         <hr>
         <p style="text-align: center; margin: 0 10px; background-color:white;"> 
             About Us: Our recipes are easy to follow and will guide you to excellence. 
@@ -212,5 +215,4 @@
     
 </body>
 </html>
-
 
