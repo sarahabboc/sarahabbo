@@ -8,22 +8,5 @@ a{text-decoration:none;}
 h1{font-size:30px;font-family:"Gill Sans", Helvetica, Arial, "sans-serif"}
 
 
- /* Mobile-friendly styles */
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        text-align: center;
-    }
-
-    h1 {
-        color: rgb(231, 231, 17);
-    }
-
-    p {
-        color: black;
-        font-weight: bold;
-        padding: 0 10px; /* Added padding for small screens */
-    }
 
  
