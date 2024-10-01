@@ -1,4 +1,4 @@
-<!doctype html>
+<!-- <!doctype html>
 <html>
 <head>
 <title> Contact Page </title>
@@ -77,15 +77,122 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
 </head>
+ -->
+
+<!doctype html>
+<html>
+<head>
+    <title>Contact Page</title>
+
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Mobile scaling -->
+
+    <style type="text/css">
+        body {
+            font-size: 40px;
+            text-align: center;
+            margin: 0;
+        }
+        
+        p {
+            color: #1c1e1c;
+            text-align: center;
+            font-size: 15px;
+        }
+        
+        a {
+            text-decoration: none;
+        }
+
+        .background-image {
+            background-image: url('golosa3.jpg'); 
+            height: 500px; 
+            background-position: center;
+            background-size: cover; 
+            opacity: 0.5;
+        }
+
+        .content {
+            position: absolute;
+            top: 20%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            color: white; 
+            text-align: center;
+        }
+
+        hr {
+            width: 100%;
+        }
+
+        form label {
+            color: black; 
+        }
+
+        /* Mobile-friendly adjustments */
+        @media only screen and (max-width: 600px) {
+            body {
+                font-size: 20px;
+            }
+
+            .background-image {
+                height: 300px; /* Adjust background height for smaller screens */
+            }
+
+            .content {
+                top: 30%; /* Push content slightly higher on mobile */
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            form {
+                display: block; 
+                width: 100%; 
+                margin: 0 auto;
+            }
+
+            form input, form textarea, form button {
+                width: 90%; /* Full width for inputs */
+                margin: 10px auto; /* Margin to center */
+                font-size: 16px; /* Adjust font size */
+            }
+
+            hr {
+                width: 90%; /* Reduce horizontal rule width for mobile */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="background-image"></div>
+    <div class="content">
+        <h1 style="color:rgb(231, 231, 17); text-align:center;">Recipes by Golosa</h1>
+        <hr>
+        <p style="text-align: center; margin: 0 10px; background-color:white;"> 
+            About Us: Our recipes are easy to follow and will guide you to excellence. 
+            If you need any assistance, feel free to contact us at support@golosa.com or 
+            call us at (123) 456-7890.
+        </p>   
+
+        <br><br> 
+        <form action="#" method="POST">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" required></textarea>
+        
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <div style="text-align: center; margin: 0 10px; background-color: rgb(231, 231, 17);">
+        <p style="font-weight: bold;"><a href="index.html">homepage</a></p>
+    </div>
+    
+</body>
+</html>
 
