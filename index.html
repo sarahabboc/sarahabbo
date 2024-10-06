@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>WorkSheet</title>
+
+    <script>
+        function problem1() {
+            let output= "";
+            for (let i = 40; i >= 10; i -= 2) {
+               output += i + " ";
+            }
+            alert(output);
+        }
+
+        function problem2(){
+            let sum=0;
+            while( sum<=20){
+                let input= parseInt(prompt("Enter a Number:"));
+                 sum+= input;
+                 alert("Sum: " + sum);
+                
+            
+            }
+            if(sum > 20){
+            alert("The sum exceeded 20! Final sum:" + sum);
+            }
+
+        }
+
+
+
+        function problem3(){
+            let sum=0;
+            let numbers=[];
+           
+
+            while( sum<=20){
+                let input= parseInt(prompt("Enter a Number:"));
+                sum+= input;
+                numbers.push(input);
+               
+
+            }
+        
+            alert("Numbers entered: " + numbers.join(", ")); // Display the array
+           
+        }
+
+
+        function problem4(){
+
+            let songs= {
+
+                "Caminando por la vida": "Melendi",
+                "Enseñame a Bailar": "Bad Bunny",
+                "Si antes te hubiera Conocido": "Karol G",
+                "Que Bonito es Querer": "Manuel Carrasco",
+                "Hey jude":"The Beattles"
+
+            };
+
+    
+            let outPut="";
+            for (let song in songs) {
+            
+            outPut += song + " by " + songs[song] + "\n";
+            }
+                alert(outPut);
+            
+        }
+
+        function problem5(){
+
+        let songs= {
+
+        "Caminando por la vida": "Melendi",
+        "Enseñame a Bailar": "Bad Bunny",
+        "Si antes te hubiera Conocido": "Karol G",
+        "Que Bonito es Querer": "Manuel Carrasco",
+        "Hey jude":"The Beattles"
+
+        };
+
+        let band = prompt("Enter band name: ");
+        let outPut="";
+            for (let song in songs) {
+                if(songs[song].toLowerCase() === band.toLowerCase()){
+                outPut += song + " by " + songs[song] + "\n";
+                }
+            }
+            if (outPut === "") {
+            alert("No songs found");
+             } else {
+            alert(outPut);
+
+            }
+
+        }
+
+
+
+
+
+        function RUNproblems(){
+            problem1();
+            problem2();
+            problem3();
+            problem4();
+            problem5();
+        }
+    </script>
+
+    <h1>Problem1:Countdown from 40 to 10</h1>
+    <button onclick="problem1()">Start Countdown</button>
+
+    <h2>Problem2: Sum is 20</h2>
+    <button onclick="problem2()">Insert Number</button>
+   
+    <h3>Problem3: Sum is 20 + display array</h3>
+    <button onclick="problem3()">Insert Number</button>
+   
+
+    <h4>Problem4: Display Songs</h4>
+    <button onclick="problem4()">songs</button>
+
+    <h5>Problem5: Display Songs</h5>
+    <button onclick="problem5()">insert band name</button>
+   
+
+
+</body>
+</html>
+
+
+
