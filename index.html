@@ -1,137 +1,209 @@
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
+from irobot_create_msgs.msg import IrIntensityVector
+from geometry_msgs.msg import Twist
 
-<!DOCTYPE html>
-<html>
-<head>
-
-    <title>WorkSheet</title>
-
-    <script>
-        function problem1() {
-            let output= "";
-            for (let i = 40; i >= 10; i -= 2) {
-               output += i + " ";
-            }
-            alert(output);
-        }
-
-        function problem2(){
-            let sum=0;
-            while( sum<=20){
-                let input= parseInt(prompt("Enter a Number:"));
-                 sum+= input;
-                 alert("Sum: " + sum);
-                
-            
-            }
-            if(sum > 20){
-            alert("The sum exceeded 20! Final sum:" + sum);
-            }
-
-        }
+from keras.models import load_model
+import numpy as np
+from picamera2 import Picamera2
+import time
+import cv2
+import RPi.GPIO as GPIO
+np.set_printoptions(suppress=True)  # No scientific notation
 
 
+#CELEBRATION
+# Set up GPIO mode and pin
+GPIO.setmode(GPIO.BOARD)
+servo_pin = 36
+GPIO.setup(servo_pin, GPIO.OUT)
 
-        function problem3(){
-            let sum=0;
-            let numbers=[];
-           
+# Create a PWM instance
+pwm = GPIO.PWM(servo_pin, 50) # 50Hz frequency
+pwm.start(0)
 
-            while( sum<=20){
-                let input= parseInt(prompt("Enter a Number:"));
-                sum+= input;
-                numbers.push(input);
-               
-
-            }
-        
-            alert("Numbers entered: " + numbers.join(", ")); // Display the array
-           
-        }
-
-
-        function problem4(){
-
-            let songs= {
-
-                "Caminando por la vida": "Melendi",
-                "Enseñame a Bailar": "Bad Bunny",
-                "Si antes te hubiera Conocido": "Karol G",
-                "Que Bonito es Querer": "Manuel Carrasco",
-                "Hey jude":"The Beattles"
-
-            };
-
-    
-            let outPut="";
-            for (let song in songs) {
-            
-            outPut += song + " by " + songs[song] + "\n";
-            }
-                alert(outPut);
-            
-        }
-
-        function problem5(){
-
-        let songs= {
-
-        "Caminando por la vida": "Melendi",
-        "Enseñame a Bailar": "Bad Bunny",
-        "Si antes te hubiera Conocido": "Karol G",
-        "Que Bonito es Querer": "Manuel Carrasco",
-        "Hey jude":"The Beattles"
-
-        };
-
-        let band = prompt("Enter band name: ");
-        let outPut="";
-            for (let song in songs) {
-                if(songs[song].toLowerCase() === band.toLowerCase()){
-                outPut += song + " by " + songs[song] + "\n";
-                }
-            }
-            if (outPut === "") {
-            alert("No songs found");
-             } else {
-            alert(outPut);
-
-            }
-
-        }
+def set_angle(angle):
+    duty = angle / 18 + 2
+    GPIO.output(servo_pin, True)
+    pwm.ChangeDutyCycle(duty)
+    time.sleep(1)
+    GPIO.output(servo_pin, False)
+    pwm.ChangeDutyCycle(0)
 
 
+class IRControlledPokemonWalker(Node):
+    def _init_(self):
+        super()._init_('ir_pokemon_walker')
+        self.get_logger().info('🚀 Starting IR-controlled Pokemon walker!')
+
+        # IR Sensor subscription
+        self.subscription = self.create_subscription(
+            IrIntensityVector, '/ir_intensity', self.ir_callback, qos_profile_sensor_data)
+
+        # Velocity publisher
+        self.publisher = self.create_publisher(Twist, '/cmd_vel', 10)
+
+        # Load Model and Labels
+        self.model = load_model("keras_model.h5", compile=False)
+        self.class_names = open("labels.txt", "r").readlines()
+
+        # Camera setup
+        self.picam2 = Picamera2()
+        camera_config = self.picam2.create_still_configuration(main={"size": (224, 224)})
+        self.picam2.configure(camera_config)
+        self.picam2.start()
+        time.sleep(2)
+
+        # State control
+        self.should_move = True  # Initially moving
+        self.should_scan = False  # Flag to scan when object detected
+        self.action_in_progress = False  # Prevent overlap
+
+        # Timer loop
+        self.timer = self.create_timer(0.5, self.main_loop)
+
+    def ir_callback(self, msg: IrIntensityVector):
+        readings = [reading.value for reading in msg.readings]
+        print('Printing IR sensor readings:')
+        for idx, val in enumerate(readings):
+            print(f"IR Sensor {idx}: {val}")
+
+        if len(readings) > 4:
+            third, fourth, fifth = readings[2], readings[3], readings[4]
+            print(f"Relevant IR Sensors: {third}, {fourth}, {fifth}")
+
+            if third >= 24 or fourth >= 23 or fifth >= 20:
+                self.get_logger().warn("🛑 STOP: Object detected!")
+                self.should_move = False
+                self.should_scan = True  # Ready to scan after stopping
+            else:
+                self.get_logger().info("✅ CLEAR: Path is clear.")
+                if not self.action_in_progress:  # Resume moving if not acting
+                    self.should_move = True
+                    self.should_scan = False
+
+    def main_loop(self):
+        if self.should_move and not self.action_in_progress:
+            self.move_forward()
+        elif self.should_scan and not self.action_in_progress:
+            self.analyze_object()
+
+    def move_forward(self):
+        msg = Twist()
+        msg.linear.x = 0.1  # Forward slowly
+        msg.angular.z = 0.0
+        self.publisher.publish(msg)
+        self.get_logger().info("🚶 Moving Forward.")
+
+    def stop_moving(self):
+        msg = Twist()
+        msg.linear.x = 0.0
+        msg.angular.z = 0.0
+        self.publisher.publish(msg)
+        self.get_logger().info("🛑 Robot Stopped.")
+
+    def rotate(self, angular_speed, duration):
+        '''
+        Rotate robot at given angular speed for a duration (in seconds).
+        '''
+        msg = Twist()
+        msg.linear.x = 0.0
+        msg.angular.z = angular_speed
+
+        self.get_logger().info(f"🔄 Rotating at speed {angular_speed} rad/s for {duration} sec.")
+        start_time = time.time()
+        while time.time() - start_time < duration:
+            self.publisher.publish(msg)
+            time.sleep(0.1)  # Small sleep to avoid spamming
+
+        # Stop rotation
+        msg.angular.z = 0.0
+        self.publisher.publish(msg)
+        self.get_logger().info("✅ Rotation complete.")
+
+    def analyze_object(self):
+        self.get_logger().info("🔍 Analyzing object...")
+        self.stop_moving()  # Ensure fully stopped
+        self.action_in_progress = True  # Lock actions during analysis
+
+        frame = self.picam2.capture_array()
+        if frame.shape[2] == 4:
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2RGB)
+
+        image = np.asarray(frame, dtype=np.float32).reshape(1, 224, 224, 3)
+        image = (image / 127.5) - 1
+
+        prediction = self.model.predict(image, verbose=0)
+        index = np.argmax(prediction)
+        class_name = self.class_names[index].strip()
+        confidence_score = prediction[0][index]
+
+        print(f"🎯 Detected: {class_name} | Confidence: {round(confidence_score * 100, 2)}%")
+
+        # Act based on classification
+        self.take_action_based_on_class(class_name)
+
+    def take_action_based_on_class(self, class_name):
+        msg = Twist()   
+        action_time = 2  # seconds to perform action
+        self.finish = False
+
+        if class_name == "sara":
+            self.get_logger().info('🌀 "sara": Rotating right.')
+            self.rotate(-1.0, 1.57)  # RIGHT
+        elif class_name == "Bluetail":
+            self.get_logger().info('🌀 "Bluetail": Rotating right.')
+            self.rotate(-1.0, 1.57)  # RIGHT
+        elif class_name == "200":
+            self.get_logger().info('🌀 "200": Rotating left.')
+            self.rotate(-1.0, 1.57)  #RIGHT
+        elif class_name == "Orange"
+            self.get_logger().info('🌀 "Orange": Rotating left.')
+            self.rotate(1.0, 1.57)  # LEFTS
+        elif class_name == "Pokeball":
+            self.get_logger().info('🛑 "Pokeball": Rotating right.')
+            self.rotate(1.0, 1.57)   #LEFTS
+            self.finish = True
+
+        elif class_name == "pikacu":
+            self.get_logger().info('⚡ "pikacu": Rotate left & move forward.')
+            self.rotate(-1.0, 1.57)  # 90 degree left
+        else:
+            self.get_logger().info('❓ Unknown. No action.')
+            msg.linear.x = 0.0
+            self.publisher.publish(msg)
+            time.sleep(action_time)
+
+        self.get_logger().info("✅ Action complete, resuming movement.")
+        self.should_move = True
+        self.should_scan = False
+        self.action_in_progress = False
+        while (self.finish == True):
+            set_angle(70)
+            time.sleep(.05)
+            set_angle(100)
+            time.sleep(.05)
 
 
-
-        function RUNproblems(){
-            problem1();
-            problem2();
-            problem3();
-            problem4();
-            problem5();
-        }
-    </script>
-
-    <h1>Problem1:Countdown from 40 to 10</h1>
-    <button onclick="problem1()">Start Countdown</button>
-
-    <h2>Problem2: Sum is 20</h2>
-    <button onclick="problem2()">Insert Number</button>
-   
-    <h3>Problem3: Sum is 20 + display array</h3>
-    <button onclick="problem3()">Insert Number</button>
-   
-
-    <h4>Problem4: Display Songs</h4>
-    <button onclick="problem4()">songs</button>
-
-    <h5>Problem5: Display Songs</h5>
-    <button onclick="problem5()">insert band name</button>
-   
+    def cleanup(self):
+        self.picam2.stop()
+        self.destroy_node()
 
 
-</body>
-</html>
+def main(args=None):
+    rclpy.init(args=args)
+    node = IRControlledPokemonWalker()
+    print('🤖 Ready to roll! Press CTRL+C to exit.')
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        print('\n🛑 Stopping robot.')
+    finally:
+        node.cleanup()
+        rclpy.shutdown()
 
 
+if _name_ == '_main_':
+    main()
 
