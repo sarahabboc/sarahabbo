@@ -1,0 +1,101 @@
+<html>
+<head>
+    <title>Startup Filter</title>
+</head>
+<body>
+    <h1>Startup Directory</h1>
+    
+    <label for="stageFilter">Stage:</label>
+    <select id="stageFilter">
+        <option value="all">All</option>
+        <option value="Early Stage">Early Stage</option>
+        <option value="Commercial">Commercial</option>
+    </select>
+    
+    <label for="locationFilter">Location:</label>
+    <select id="locationFilter">
+        <option value="all">All</option>
+        <option value="Central Israel">Central Israel</option>
+        <option value="Northern Israel">Northern Israel</option>
+        <option value="Southern Israel">Southern Israel</option>
+        <option value="other">Other</option>
+    </select>
+    
+    <label for="sectorFilter">Sector:</label>
+    <select id="sectorFilter">
+        <option value="all">All</option>
+        <option value="Water">Water</option>
+        <option value="Industry and Energy">Industry and Energy</option>
+        <option value="Construction and Infrastructure">Construction and Infrastructure</option>
+        <option value="Real Estate">Real Estate</option>
+        <option value="other">Other</option>
+    </select>
+    
+    <label for="portfolioFilter">Portfolio:</label>
+    <select id="portfolioFilter">
+        <option value="all">All</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+    </select>
+    
+    <button id="filterButton">Filter</button>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Stage</th>
+                <th>Location</th>
+                <th>Sector</th>
+                <th>Portfolio</th>
+            </tr>
+        </thead>
+        <tbody id="startupTableBody"></tbody>
+    </table>
+    
+    <script>
+        document.getElementById("filterButton").addEventListener("click", function() {
+            // Get filter values
+            const stage = document.getElementById("stageFilter").value;
+            const location = document.getElementById("locationFilter").value;
+            const sector = document.getElementById("sectorFilter").value;
+            const portfolio = document.getElementById("portfolioFilter").value;
+
+            // Construct the query string
+            const queryString = ⁠ ?stage=${encodeURIComponent(stage)}&location=${encodeURIComponent(location)}&sector=${encodeURIComponent(sector)}&portfolio=${encodeURIComponent(portfolio)} ⁠;
+
+            // Fetch filtered data
+            fetch(⁠ https://yourdomain.com/api/filter.php${queryString} ⁠)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(⁠ HTTP error! Status: ${response.status} ⁠);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const tableBody = document.getElementById("startupTableBody");
+                    tableBody.innerHTML = ""; // Clear previous results
+
+                    if (data.length === 0) {
+                        const row = document.createElement("tr");
+                        row.innerHTML = ⁠ <td colspan="5">No results found</td> ⁠;
+                        tableBody.appendChild(row);
+                    } else {
+                        data.forEach(startup => {
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td>${startup.name || "N/A"}</td>
+                                <td>${startup.stage || "N/A"}</td>
+                                <td>${startup.location || "N/A"}</td>
+                                <td>${startup.sector || "N/A"}</td>
+                                <td>${startup.portfolio || "N/A"}</td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    }
+                })
+                .catch(error => console.error("Error fetching data:", error));
+        });
+    </script>
+</body>
+</html>
