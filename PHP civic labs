@@ -1,0 +1,138 @@
+<?php
+// Database connection
+$conn = new mysqli("localhost", "username", "password", "database");
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch filters from the form
+$stage = $_GET['stage'] ?? 'all';
+$location = $_GET['location'] ?? 'all';
+$sector = $_GET['sector'] ?? 'all';
+$portfolio = $_GET['portfolio'] ?? 'all';
+
+// Base query
+$sql = "SELECT * FROM databaseinfo WHERE 1=1"; // The ⁠ 1=1 ⁠ simplifies adding conditions
+$params = [];
+$types = "";
+
+// Add filters to the query
+if ($stage !== 'all') {
+    $sql .= " AND stage = ?";
+    $params[] = $stage;
+    $types .= "s"; // String type
+}
+
+if ($location !== 'all') {
+    $sql .= " AND location = ?";
+    $params[] = $location;
+    $types .= "s";
+}
+
+if ($sector !== 'all') {
+    $sql .= " AND sector = ?";
+    $params[] = $sector;
+    $types .= "s";
+}
+
+if ($portfolio !== 'all') {
+    $sql .= " AND civiclabs_portfolio = ?";
+    $params[] = $portfolio;
+    $types .= "s";
+}
+
+// Prepare and execute the query
+$stmt = $conn->prepare($sql);
+
+if ($types) {
+    $stmt->bind_param($types, ...$params); // Bind parameters dynamically
+}
+
+$stmt->execute();
+$result = $stmt->get_result();
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtered Results</title>
+</head>
+<body>
+    <h1>Filter Startups</h1>
+
+    <!-- Filter Form -->
+    <form method="GET" action="">
+        <label for="stage">Stage:</label>
+        <select id="stage" name="stage">
+            <option value="all">All</option>
+            <option value="early stage" <?php echo $stage === "early stage" ? "selected" : ""; ?>>Early Stage</option>
+            <option value="commercial" <?php echo $stage === "commercial" ? "selected" : ""; ?>>Commercial</option>
+        </select>
+
+        <label for="location">Location:</label>
+        <select id="location" name="location">
+            <option value="all">All</option>
+            <option value="Northern" <?php echo $location === "Northern" ? "selected" : ""; ?>>Northern</option>
+            <option value="Central" <?php echo $location === "Central" ? "selected" : ""; ?>>Central</option>
+            <option value="Southern" <?php echo $location === "Southern" ? "selected" : ""; ?>>Southern</option>
+        </select>
+
+        <label for="sector">Sector:</label>
+        <select id="sector" name="sector">
+            <option value="all">All</option>
+            <option value="Industry & Energy" <?php echo $sector === "Industry & Energy" ? "selected" : ""; ?>>Industry & Energy</option>
+            <option value="Construction & Infrastructure" <?php echo $sector === "Construction & Infrastructure" ? "selected" : ""; ?>>Construction & Infrastructure</option>
+            <option value="Real Estate" <?php echo $sector === "Real Estate" ? "selected" : ""; ?>>Real Estate</option>
+            <option value="Water" <?php echo $sector === "Water" ? "selected" : ""; ?>>Water</option>
+            <option value="Other" <?php echo $sector === "Other" ? "selected" : ""; ?>>Other</option>
+        </select>
+
+        <label for="portfolio">CivicLabs Portfolio:</label>
+        <select id="portfolio" name="portfolio">
+            <option value="all">All</option>
+            <option value="yes" <?php echo $portfolio === "yes" ? "selected" : ""; ?>>Yes</option>
+            <option value="no" <?php echo $portfolio === "no" ? "selected" : ""; ?>>No</option>
+        </select>
+
+        <button type="submit">Filter</button>
+    </form>
+
+    <!-- Results Table -->
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Stage</th>
+                <th>Location</th>
+                <th>Sector</th>
+                <th>Portfolio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            if ($result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    echo "<tr>
+                            <td>{$row['name']}</td>
+                            <td>{$row['stage']}</td>
+                            <td>{$row['location']}</td>
+                            <td>{$row['sector']}</td>
+                            <td>{$row['civiclabs_portfolio']}</td>
+                          </tr>";
+                }
+            } else {
+                echo "<tr><td colspan='5'>No results found</td></tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+</body>
+</html>
+<?php
+// Close the database connection
+$stmt->close();
+$conn->close();
+?>
