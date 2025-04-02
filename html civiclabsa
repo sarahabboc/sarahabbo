@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filter Example</title>
+</head>
+<body>
+    <h1>Filter Startups</h1>
+
+    <!-- Filter Options -->
+    <form method="GET" action="">
+        <label for="stage">Stage:</label>
+        <select id="stage" name="stage">
+            <option value="all">All</option>
+            <option value="early stage">Early Stage</option>
+            <option value="commercial">Commercial</option>
+        </select>
+
+        <label for="location">Location:</label>
+        <select id="location" name="location">
+            <option value="all">All</option>
+            <option value="Northern">Northern</option>
+            <option value="Central">Central</option>
+            <option value="Southern">Southern</option>
+        </select>
+
+        <button type="submit">Filter</button>
+    </form>
+
+    <!-- Table to Display Data -->
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Stage</th>
+                <th>Location</th>
+                <th>Sector</th>
+                <th>Portfolio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            // Database connection
+            $conn = new mysqli("localhost", "username", "password", "database");
+
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            // Fetch filters from form
+            $stage = $_GET['stage'] ?? 'all';
+            $location = $_GET['location'] ?? 'all';
+
+            // Build SQL query
+            $sql = "SELECT * FROM databaseinfo WHERE 1=1";
+            if ($stage !== 'all') {
+                $sql .= " AND stage = '$stage'";
+            }
+            if ($location !== 'all') {
+                $sql .= " AND location = '$location'";
+            }
+
+            $result = $conn->query($sql);
+
+            if ($result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    echo "<tr>
+                            <td>{$row['name']}</td>
+                            <td>{$row['stage']}</td>
+                            <td>{$row['location']}</td>
+                            <td>{$row['sector']}</td>
+                            <td>{$row['civiclabs_portfolio']}</td>
+                          </tr>";
+                }
+            } else {
+                echo "<tr><td colspan='5'>No results found</td></tr>";
+            }
+
+            $conn->close();
+            ?>
+        </tbody>
+    </table>
+</body>
+</html>
